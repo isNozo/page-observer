@@ -9,6 +9,7 @@ function send_msg_from_extension(data){
 }
 
 function notify(msg){
+    console.log(msg);
     chrome.notifications.create({
 	type: "basic",
 	title: "Page Observer",
@@ -17,10 +18,26 @@ function notify(msg){
     });
 }
 
+function imgURL_to_blob(imgURL){
+    return new Promise((resolve, reject) => {
+	const request = new XMLHttpRequest();
+	request.open('GET', imgURL);
+	request.responseType = "blob";
+
+	request.addEventListener("load", () => {
+	    if(request.status === 200) {
+		resolve(request.response);
+	    } else {
+		reject(Error(imgURL + " didn\'t load successfully."));
+	    }
+	});
+	request.send();
+    });
+}
+
 chrome.runtime.onMessage.addListener(
     (request, sender, sendResponse) => {
 	if(request.from != "content") return;
-	console.log("popup received :", request.msg);
 	notify(request.msg);
     }
 );

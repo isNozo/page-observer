@@ -13,7 +13,7 @@ function spawn_observer(query, option){
     
     const obs = new MutationObserver((rec) => {
 	console.log(rec);
-	send_msg_from_content(rec[0].addedNodes[0].innerText);
+	send_msg_from_content(rec[0].addedNodes[0].querySelector(".tweet-body").innerText);
     });
     
     obs.observe(target, option);
