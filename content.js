@@ -1,8 +1,16 @@
-function send_msg_from_content(data){
+function send_msg(data){
+    console.log("send:",data);
     chrome.runtime.sendMessage(
-	{from: "content", msg: data},
-	(response) => {}
-    );
+	{from : "content", msg : data}
+    )
+}
+
+function make_notification_data(node){
+    return {
+	title : node.querySelector(".account-inline.txt-ellipsis").innerText,
+	body : node.querySelector(".js-tweet-text.tweet-text.with-linebreaks").innerText,
+	icon : "dummy_icon.png"
+    }
 }
 
 function spawn_observer(query, option){
@@ -11,9 +19,12 @@ function spawn_observer(query, option){
     if(!target) return null;
     console.log("find dom : ", target);
     
-    const obs = new MutationObserver((rec) => {
-	console.log(rec);
-	send_msg_from_content(rec[0].addedNodes[0].querySelector(".tweet-body").innerText);
+    const obs = new MutationObserver((recs) => {
+	recs.forEach((rec) => {
+	    rec.addedNodes.forEach((node) => {
+		send_msg(make_notification_data(node));
+	    });
+	});
     });
     
     obs.observe(target, option);
@@ -23,9 +34,14 @@ function spawn_observer(query, option){
 
 chrome.runtime.onMessage.addListener(
     (request, sender, sendResponse) => {
-	if(request.from != "extension") return;
-	
-	const query = request.msg;
-	spawn_observer(query, {childList:true});
+	switch(request.from){
+	case 'popup' :
+	    console.log("recieve:",request);
+	    const query = request.msg;
+	    spawn_observer(query, {childList:true});
+	    break;
+	default :
+	    return;
+	}
     }
 );
