@@ -1,9 +1,26 @@
 function notify(msg){
-    chrome.notifications.create({
-	type: "basic",
-	title: msg.title,
-	message: msg.body,
-	iconUrl: msg.icon
+    imgURL_to_blob(msg.icon).then((icon_blob) => {
+	switch(msg.type){
+	case "image":
+	    imgURL_to_blob(msg.imageUrl).then((image_blob) => {
+		chrome.notifications.create({
+		    type : "image",
+		    title : msg.title,
+		    message : msg.body,
+		    iconUrl : icon_blob,
+		    imageUrl : image_blob
+		});
+	    });
+	    break;
+	case "basic":
+	    chrome.notifications.create({
+		type : "basic",
+		title : msg.title,
+		message : msg.body,
+		iconUrl : icon_blob,
+	    });
+	    break;
+	}
     });
 }
 
@@ -15,7 +32,7 @@ function imgURL_to_blob(imgURL){
 
 	request.addEventListener("load", () => {
 	    if(request.status === 200) {
-		resolve(request.response);
+		resolve(window.URL.createObjectURL(request.response));
 	    } else {
 		reject(Error(imgURL + " didn\'t load successfully."));
 	    }

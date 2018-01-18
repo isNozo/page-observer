@@ -6,10 +6,22 @@ function send_msg(data){
 }
 
 function make_notification_data(node){
-    return {
-	title : node.querySelector(".account-inline.txt-ellipsis").innerText,
-	body : node.querySelector(".js-tweet-text.tweet-text.with-linebreaks").innerText,
-	icon : "dummy_icon.png"
+    const img_node = node.querySelector(".js-media-image-link");
+    if(img_node){
+	return {
+	    type : "image",
+	    title : node.querySelector(".account-inline.txt-ellipsis").innerText,
+	    body : node.querySelector(".js-tweet-text.tweet-text.with-linebreaks").innerText,
+	    icon : node.querySelector(".tweet-avatar.avatar.pin-top").src,
+	    imageUrl : /url\(\"(.*)\"\)/.exec(img_node.style.backgroundImage)[1]
+	}
+    } else {
+	return {
+	    type : "basic",
+	    title : node.querySelector(".account-inline.txt-ellipsis").innerText,
+	    body : node.querySelector(".js-tweet-text.tweet-text.with-linebreaks").innerText,
+	    icon : node.querySelector(".tweet-avatar.avatar.pin-top").src
+	}
     }
 }
 
@@ -22,6 +34,7 @@ function spawn_observer(query, option){
     const obs = new MutationObserver((recs) => {
 	recs.forEach((rec) => {
 	    rec.addedNodes.forEach((node) => {
+		console.log("node:",node);
 		send_msg(make_notification_data(node));
 	    });
 	});
