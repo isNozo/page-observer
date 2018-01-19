@@ -10,7 +10,10 @@ function send_msg(data){
 
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('#rq_button').addEventListener('click', () => {
-	const query = document.querySelector('#query_input').value;
-	send_msg(query);
+	chrome.storage.sync.get("targets", (items) => {
+	    console.log("get storage:", items);
+	    for(const target of items.targets)
+		send_msg(target);
+	});
     });
 });

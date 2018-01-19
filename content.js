@@ -1,3 +1,29 @@
+const url_regexp = new RegExp(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/);
+
+chrome.storage.sync.clear();
+chrome.storage.sync.set({
+    targets : [
+	{
+	    query : ".column-type-home .chirp-container",
+	    title : {query : ".account-inline.txt-ellipsis", props : ["innerText"]},
+	    body : {query : ".tweet-text.with-linebreaks", props : ["innerText"]},
+	    icon : {query : ".tweet-avatar.avatar.pin-top", props : ["src"]},
+	    image : {query : ".js-media-image-link", props : ["style", "backgroundImage"]}
+	},
+	{
+	    query : ".column-type-search .chirp-container",
+	    title : {query : ".account-inline.txt-ellipsis", props : ["innerText"]},
+	    body : {query : ".tweet-text.with-linebreaks", props : ["innerText"]},
+	    icon : {query : ".tweet-avatar.avatar.pin-top", props : ["src"]},
+	    image : {query : ".js-media-image-link", props : ["style", "backgroundImage"]}
+	}
+    ]
+});
+
+chrome.storage.sync.get(null, (items) => {
+    console.log("get storage:", items);
+});
+
 function send_msg(data){
     console.log("send:",data);
     chrome.runtime.sendMessage(
@@ -5,28 +31,40 @@ function send_msg(data){
     )
 }
 
-function make_notification_data(node){
-    const img_node = node.querySelector(".js-media-image-link");
+function access_props(node, props){
+    let elem = node;
+    for(const prop of props){
+	if(elem !== undefined){
+	    elem = elem[prop];		
+	}else{
+	    return null;
+	}
+    }
+    return elem;
+}
+
+function make_notification_data(node,item){
+    const img_node = node.querySelector(item.image.query);
     if(img_node){
 	return {
 	    type : "image",
-	    title : node.querySelector(".account-inline.txt-ellipsis").innerText,
-	    body : node.querySelector(".js-tweet-text.tweet-text.with-linebreaks").innerText,
-	    icon : node.querySelector(".tweet-avatar.avatar.pin-top").src,
-	    imageUrl : /url\(\"(.*)\"\)/.exec(img_node.style.backgroundImage)[1]
+	    title : access_props(node.querySelector(item.title.query), item.title.props),
+	    body : access_props(node.querySelector(item.body.query), item.body.props),
+	    icon : url_regexp.exec(access_props(node.querySelector(item.icon.query), item.icon.props))[0],
+	    imageUrl : url_regexp.exec(access_props(img_node, item.image.props))[0]
 	}
     } else {
 	return {
 	    type : "basic",
-	    title : node.querySelector(".account-inline.txt-ellipsis").innerText,
-	    body : node.querySelector(".js-tweet-text.tweet-text.with-linebreaks").innerText,
-	    icon : node.querySelector(".tweet-avatar.avatar.pin-top").src
+	    title : access_props(node.querySelector(item.title.query), item.title.props),
+	    body : access_props(node.querySelector(item.body.query), item.body.props),
+	    icon : url_regexp.exec(access_props(node.querySelector(item.icon.query), item.icon.props))[0]
 	}
     }
 }
 
-function spawn_observer(query, option){
-    const target = document.querySelector(query);
+function spawn_observer(item, option){
+    const target = document.querySelector(item.query);
     
     if(!target) return null;
     console.log("find dom : ", target);
@@ -35,7 +73,7 @@ function spawn_observer(query, option){
 	recs.forEach((rec) => {
 	    rec.addedNodes.forEach((node) => {
 		console.log("node:",node);
-		send_msg(make_notification_data(node));
+		send_msg(make_notification_data(node,item));
 	    });
 	});
     });
@@ -50,8 +88,8 @@ chrome.runtime.onMessage.addListener(
 	switch(request.from){
 	case 'popup' :
 	    console.log("recieve:",request);
-	    const query = request.msg;
-	    spawn_observer(query, {childList:true});
+	    const item = request.msg;
+	    spawn_observer(item, {childList:true});
 	    break;
 	default :
 	    return;
