@@ -24,5 +24,6 @@
 	"chrome_style": false,
 	"open_in_tab" : true
     },
+    "content_security_policy": "script-src 'self' https://code.jquery.com https://cdnjs.cloudflare.com; object-src 'self'",
     "permissions" : ["notifications", "storage"]
 }
