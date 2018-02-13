@@ -1,0 +1,23 @@
+{
+    "name": "page-observer",
+    "version": "1.0.0",
+    "description": "",
+    "main": "background.js",
+    "scripts": {
+	"build": "webpack",
+	"test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+	"type": "git",
+	"url": "git+https://github.com/isNozo/page-observer.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+	"url": "https://github.com/isNozo/page-observer/issues"
+    },
+    "homepage": "https://github.com/isNozo/page-observer#readme",
+    "devDependencies": {
+	"webpack": "^3.11.0"
+    }
+}
