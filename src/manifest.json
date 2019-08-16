@@ -3,13 +3,13 @@
     "name": "Page Observer",
     "version": "0.0",
     "background" : {
-	"scripts" : ["background.js"],
+	"scripts" : ["elm.js", "background.js"],
 	"persistent" : false
     },
     "content_scripts" : [
 	{
-	    "matches" : ["*://*/*"],
-	    "js" : ["content.js"]
+	    "js" : ["elm.js", "content.js"],
+	    "matches" : ["*://*/*"]
 	}
     ],
     "permissions" : ["notifications"]
